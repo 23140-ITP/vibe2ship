@@ -1,0 +1,4 @@
+docs: rewrite README and create copy-paste Google Doc template
+
+- Updates README.md to world-class standards detailing architecture, Vertex AI credentials, modules, and setup
+- Adds project_description.md copy-paste template for Google Doc submission
