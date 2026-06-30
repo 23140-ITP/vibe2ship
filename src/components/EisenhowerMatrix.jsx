@@ -12,13 +12,14 @@ const QUADRANTS = [
 const ENERGY_LEVELS = ['High Focus', 'Medium', 'Low'];
 
 async function callGemini(apiKey, model, prompt) {
-  const modelName = model || 'gemini-2.5-flash';
-  return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
+  const endpoint = prompt.includes('Categorize') ? '/api/categorize-tasks' : '/api/breakdown-task';
+  return fetch(endpoint, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
-  }).then(r => r.json()).then(d => d.candidates?.[0]?.content?.parts?.[0]?.text || '');
+    body: JSON.stringify({ model, prompt }),
+  }).then(r => r.json()).then(d => d.text || '');
 }
+
 
 
 export default function EisenhowerMatrix() {

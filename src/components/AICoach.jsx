@@ -159,18 +159,17 @@ async function callGemini(apiKey, model, persona, history, userMessage, state, a
   while (loopLimit > 0) {
     loopLimit--;
 
-    const resp = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemInstruction }] },
-          contents,
-          tools: TOOLS,
-        }),
-      }
-    );
+    const resp = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: modelName,
+        persona,
+        contents,
+        tools: TOOLS,
+      }),
+    });
+
 
     const data = await resp.json();
     if (!resp.ok) throw new Error(data.error?.message || 'API error');

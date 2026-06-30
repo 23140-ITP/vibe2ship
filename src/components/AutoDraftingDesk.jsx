@@ -60,27 +60,20 @@ export default function AutoDraftingDesk() {
         const templatePrompt = `Write a brief status update note for: Main Task: "${taskName}", Subtask: "${subtaskName}". Format as a short bullet list. Keep under 60 words.`;
 
         const model = settings.selectedModel || 'gemini-2.5-flash';
-        const [emailResp, templateResp] = await Promise.all([
-          fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.geminiApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: emailPrompt }] }] }),
-          }),
-          fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.geminiApiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ contents: [{ parts: [{ text: templatePrompt }] }] }),
-          }),
-        ]);
+        const resp = await fetch('/api/generate-drafts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model, emailPrompt, templatePrompt }),
+        });
 
-
-        if (emailResp.ok && templateResp.ok) {
-          const [emailData, templateData] = await Promise.all([emailResp.json(), templateResp.json()]);
-          generatedEmail = emailData.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          generatedTemplate = templateData.candidates?.[0]?.content?.parts?.[0]?.text || '';
+        if (resp.ok) {
+          const data = await resp.json();
+          generatedEmail = data.email;
+          generatedTemplate = data.template;
         } else {
           throw new Error('API returned error');
         }
+
       } catch {
         // Fallback to sensible mock draft
         generatedEmail = `Subject: Update on ${taskName} — ${subtaskName}\n\nHi,\n\nQuick update: I've completed "${subtaskName}" under ${taskName}. Ready to sync on next steps whenever works for you.\n\nBest,\nUser`;
