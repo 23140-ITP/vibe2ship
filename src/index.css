@@ -1,0 +1,638 @@
+/* ==========================================
+   1. CSS Custom Properties
+   ========================================== */
+:root {
+  /* Colors */
+  --color-primary: #292524;            /* warm near-black for primary buttons */
+  --color-primary-active: #0c0a09;     /* darker state on click */
+  --color-ink: #0c0a09;                /* display headings & primary text */
+  --color-body: #4e4e4e;               /* default running text */
+  --color-body-strong: #292524;        /* emphasis body */
+  --color-muted: #777169;              /* secondary titles/sub-headers */
+  --color-muted-soft: #a8a29e;         /* disabled elements */
+  --color-hairline: #e7e5e4;           /* standard 1px borders */
+  --color-hairline-soft: #f0efed;      /* subtle divider lines */
+  --color-hairline-strong: #d6d3d1;    /* prominent outlines */
+  --color-canvas: #f5f5f5;             /* base off-white canvas floor */
+  --color-canvas-soft: #fafafa;        /* slightly lighter canvas */
+  --color-surface-card: #ffffff;       /* pure white card base */
+  --color-surface-strong: #f0efed;     /* pill tags & inactive accents */
+  
+  /* ElevenLabs Signature Atmospheric Orbs */
+  --color-gradient-mint: #a7e5d3;
+  --color-gradient-peach: #f4c5a8;
+  --color-gradient-lavender: #c8b8e0;
+  --color-gradient-sky: #a8c8e8;
+  --color-gradient-rose: #e8b8c4;
+  
+  /* Semantic States */
+  --color-success: #16a34a;
+  --color-error: #dc2626;
+  
+  /* Spacing (Base 4px unit) */
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-sm: 12px;
+  --spacing-base: 16px;
+  --spacing-md: 20px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-section: 96px;
+  
+  /* Border Radius */
+  --rounded-none: 0px;
+  --rounded-xs: 4px;
+  --rounded-sm: 6px;
+  --rounded-md: 8px;
+  --rounded-lg: 12px;
+  --rounded-xl: 16px;                  /* standard cards */
+  --rounded-xxl: 24px;                 /* large/specialty cards */
+  --rounded-pill: 9999px;              /* pill buttons / tags */
+  --rounded-full: 9999px;              /* circles */
+}
+
+/* ==========================================
+   2. Reset & Document Defaults
+   ========================================== */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  letter-spacing: 0.16px; /* body-md tracking */
+  color: var(--color-body);
+  background-color: var(--color-canvas);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* App shell wrapper */
+.app-container {
+  min-height: 100vh;
+  background-color: var(--color-canvas);
+  position: relative;
+}
+
+/* Native select element — matches .input-text shape */
+select.input-text {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23777169' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+
+/* Text selection colour — warm, on-brand */
+::selection {
+  background-color: rgba(41, 37, 36, 0.12);
+  color: var(--color-ink);
+}
+
+/* Thin custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--color-hairline-strong); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--color-muted-soft); }
+
+
+
+/* ==========================================
+   3. Typography Systems
+   ========================================== */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'EB Garamond', Georgia, 'Times New Roman', serif;
+  font-weight: 300;
+  color: var(--color-ink);
+  line-height: 1.15;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: 3rem; /* display-xl (48px) */
+  font-weight: 300;
+  letter-spacing: -0.96px;
+}
+
+h2 {
+  font-size: 2.25rem; /* display-lg (36px) */
+  font-weight: 300;
+  letter-spacing: -0.36px;
+}
+
+h3 {
+  font-size: 2rem; /* display-md (32px) */
+  font-weight: 300;
+  letter-spacing: -0.32px;
+}
+
+h4 {
+  font-size: 1.5rem; /* display-sm (24px) — DESIGN.md: weight 300 */
+  font-weight: 300;
+  letter-spacing: 0px;
+}
+
+/* Specialized Typography Selectors */
+.title-md {
+  font-family: 'Inter', sans-serif;
+  font-size: 20px;
+  font-weight: 500;
+  line-height: 1.35;
+  color: var(--color-ink);
+}
+
+.title-sm {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.44;
+  letter-spacing: 0.18px;
+  color: var(--color-ink);
+}
+
+.caption {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--color-muted);
+}
+
+.caption-uppercase {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.96px;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+/* ==========================================
+   4. Shape & Layout Components
+   ========================================== */
+
+/* Standard Raised Card (white surface, slight shadow — primary card style) */
+.card {
+  background-color: var(--color-surface-card);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--rounded-xl);
+  padding: var(--spacing-lg);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04), 0 4px 16px rgba(0,0,0,0.03);
+  transition: box-shadow 0.22s ease, border-color 0.22s ease, transform 0.22s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+  border-color: var(--color-hairline-strong);
+  transform: translateY(-1px);
+}
+
+/* Flat Card — sits on canvas, no shadow. Use inside raised cards or for sections */
+.card-flat {
+  background-color: var(--color-canvas);
+  border: 1px solid var(--color-hairline);
+  border-radius: var(--rounded-xl);
+  padding: var(--spacing-lg);
+}
+
+/* Interactive card that has pointer affordance */
+.card-interactive {
+  cursor: pointer;
+}
+.card-interactive:hover {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.09);
+  border-color: var(--color-hairline-strong);
+  transform: translateY(-2px);
+}
+
+
+/* Pill CTA Buttons */
+.btn {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  line-height: 1;
+  padding: 10px 20px;
+  border-radius: var(--rounded-pill);
+  cursor: pointer;
+  /* Explicit props only — never transition:all */
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease, transform 0.1s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  height: 40px;
+  user-select: none;
+}
+
+/* Physical press depth — makes buttons feel real */
+.btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: var(--color-primary-active);
+}
+
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-ink);
+  border: 1px solid var(--color-hairline-strong);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: var(--color-surface-strong);
+  border-color: var(--color-ink);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Badges & Pills */
+.badge {
+  background-color: var(--color-surface-strong);
+  color: var(--color-ink);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.96px;
+  padding: 4px 10px;
+  border-radius: var(--rounded-pill);
+  display: inline-flex;
+  align-items: center;
+}
+
+/* Form Inputs */
+.input-text {
+  font-family: 'Inter', sans-serif;
+  font-size: 15px;
+  padding: 12px 16px;
+  border: 1px solid var(--color-hairline-strong);
+  border-radius: var(--rounded-md);
+  background-color: var(--color-surface-card);
+  color: var(--color-ink);
+  height: 44px;
+  outline: none; /* replaced by explicit :focus-visible ring below */
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.input-text:focus,
+.input-text:focus-visible {
+  border-color: var(--color-ink);
+  box-shadow: 0 0 0 2px var(--color-ink);
+  outline: none;
+}
+
+/* ==========================================
+   5. Floating Gradient Orbs & Animations
+   ========================================== */
+.gradient-orbs-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -2;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.orb {
+  position: absolute;
+  border-radius: var(--rounded-full);
+  filter: blur(120px);
+  opacity: 0.35;
+  mix-blend-mode: multiply;
+  animation: orb-drift 30s infinite ease-in-out alternate;
+}
+
+.orb-mint {
+  top: -10%;
+  left: 5%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--color-gradient-mint) 0%, rgba(255, 255, 255, 0) 70%);
+  animation-duration: 35s;
+}
+
+.orb-peach {
+  bottom: -15%;
+  right: 5%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, var(--color-gradient-peach) 0%, rgba(255, 255, 255, 0) 70%);
+  animation-duration: 40s;
+  animation-delay: -7s;
+}
+
+.orb-lavender {
+  top: 35%;
+  right: 15%;
+  width: 450px;
+  height: 450px;
+  background: radial-gradient(circle, var(--color-gradient-lavender) 0%, rgba(255, 255, 255, 0) 70%);
+  animation-duration: 28s;
+  animation-delay: -14s;
+}
+
+.orb-sky {
+  bottom: 25%;
+  left: 10%;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, var(--color-gradient-sky) 0%, rgba(255, 255, 255, 0) 70%);
+  animation-duration: 32s;
+  animation-delay: -21s;
+}
+
+@keyframes orb-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(40px, -60px) scale(1.1);
+  }
+  100% {
+    transform: translate(-20px, 30px) scale(0.95);
+  }
+}
+
+/* ==========================================
+   6. Motion Preferences & Overrides
+   ========================================== */
+
+/* Respect OS setting */
+@media (prefers-reduced-motion: reduce) {
+  .orb {
+    animation: none !important;
+    transform: none !important;
+  }
+  
+  * {
+    animation-delay: 0s !important;
+    animation-duration: 0s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0s !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Toggleable class in App state (triggered by user setting) */
+.reduce-motion .orb {
+  animation: none !important;
+  transform: none !important;
+}
+
+.reduce-motion * {
+  transition-duration: 0s !important;
+  animation-duration: 0s !important;
+}
+
+/* ==========================================
+   7. Navigation Component Styles
+   ========================================== */
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  height: 64px;
+  background-color: var(--color-canvas);
+  border-bottom: 1px solid var(--color-hairline);
+  display: flex;
+  align-items: center;
+}
+
+.nav-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Brand Wordmark */
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  cursor: pointer;
+  user-select: none;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border-radius: var(--rounded-full);
+}
+
+.brand-wordmark {
+  font-family: 'EB Garamond', Georgia, serif;
+  font-size: 1.25rem; /* ~20px */
+  font-weight: 500;
+  color: var(--color-ink);
+  letter-spacing: -0.3px;
+}
+
+/* Navigation Tabs */
+.nav-menu {
+  display: flex;
+  gap: var(--spacing-xs);
+  background-color: var(--color-surface-strong);
+  padding: 4px;
+  border-radius: var(--rounded-pill);
+}
+
+.nav-link {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-body);
+  padding: 6px 14px;
+  border-radius: var(--rounded-pill);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  color: var(--color-ink);
+}
+
+.nav-link:focus-visible {
+  outline: 2px solid var(--color-ink);
+  outline-offset: 2px;
+}
+
+.nav-link.active {
+  color: var(--color-ink);
+  background-color: var(--color-surface-card);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0,0,0,0.04);
+}
+
+/* Active indicator dot — confirms current page at a glance */
+.nav-link.active::after {
+  content: '';
+  display: inline-block;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  margin-left: 2px;
+  flex-shrink: 0;
+}
+
+
+.nav-link-icon {
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.nav-link.active .nav-link-icon {
+  opacity: 1;
+  color: var(--color-primary);
+}
+
+/* Settings Trigger Button */
+.btn-settings {
+  padding: 0 16px;
+  height: 36px;
+  font-size: 14px;
+  gap: 6px;
+}
+
+/* ==========================================
+   Responsive Adaptations
+   ========================================== */
+@media (max-width: 768px) {
+  .brand-wordmark {
+    display: none; /* Hide brand text on smaller mobile viewport to prevent wrapping */
+  }
+}
+
+@media (max-width: 640px) {
+  .nav-container {
+    padding: 0 var(--spacing-sm);
+  }
+  
+  .nav-menu {
+    overflow-x: auto;
+    white-space: nowrap;
+    max-width: 50vw;
+    scrollbar-width: none; /* Hide standard scrollbar in Firefox */
+  }
+  
+  .nav-menu::-webkit-scrollbar {
+    display: none; /* Hide scrollbar in Chrome/Safari */
+  }
+  
+  .nav-link span {
+    display: none; /* Icon-only representation for links on very narrow screens */
+  }
+  
+  .nav-link {
+    padding: 8px;
+  }
+  
+  .btn-settings span {
+    display: none; /* Icon-only settings trigger */
+  }
+  
+  .btn-settings {
+    padding: 0;
+    width: 36px;
+    border-radius: var(--rounded-full);
+  }
+}
+
+/* ==========================================
+   8. Utility Animations
+   ========================================== */
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes bounce {
+  0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+  40% { transform: translateY(-6px); opacity: 1; }
+}
+
+/* Pomodoro ring active glow — steady hand in the storm */
+@keyframes timer-pulse {
+  0%, 100% { filter: drop-shadow(0 0 0px rgba(41, 37, 36, 0)); }
+  50% { filter: drop-shadow(0 0 8px rgba(41, 37, 36, 0.18)); }
+}
+
+/* Breathing effect for running state */
+@keyframes breathe {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+/* Fade-in for newly appearing elements */
+@keyframes fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease forwards;
+}
+
+/* ==========================================
+   9. Page Header Descriptors
+   ========================================== */
+/* Subtitle line under page h1 — the "steady hand" voice */
+.page-subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-muted);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+/* ==========================================
+   10. Responsive Stack for Workspace Cards
+   ========================================== */
+@media (max-width: 900px) {
+  .grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
