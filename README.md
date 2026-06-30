@@ -2,7 +2,7 @@
 
 An AI-powered, proactive productivity companion designed to fight procrastination and help users take immediate action on deadlines.
 
-🚀 **Live App URL:** [vibe2ship-921de.web.app](https://vibe2ship-921de.web.app/)
+🚀 **Live App URL:** [vibe2ship-660662083426.us-central1.run.app](https://vibe2ship-660662083426.us-central1.run.app/)
 
 ---
 
