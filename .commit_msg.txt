@@ -1,8 +1,0 @@
-feat: convert project to full-stack Node/Express + React architecture
-
-Moves Gemini API calls to secure backend proxy to protect API Key:
-- Implements Express backend server.js serving static Vite dist/ assets
-- Exposes /api/chat, /api/generate-drafts, /api/categorize-tasks, /api/breakdown-task
-- Adds express dependency and start script to package.json
-- Redirects frontend fetches to local server routes instead of direct Google API calls
-- Adds Dockerfile and .dockerignore for simple one-command Google Cloud Run deployment
