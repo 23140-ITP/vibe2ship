@@ -1,0 +1,7 @@
+feat: implement secure passwordless Google Cloud Vertex AI integration
+
+Allows backend service account to call Gemini models directly without API keys:
+- Adds metadata server token and project-id extraction in server.js
+- Implements executeGeminiCall proxying calls to Vertex AI publish endpoints when deployed
+- Falls back to standard Gemini API Keys for local developer mode
+- Retains client-side settings overrides
