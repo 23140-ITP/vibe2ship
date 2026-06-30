@@ -8,6 +8,7 @@ const EisenhowerMatrix = lazy(() => import('./components/EisenhowerMatrix'));
 const SmartScheduler   = lazy(() => import('./components/SmartScheduler'));
 const AICoach          = lazy(() => import('./components/AICoach'));
 const AutoDraftingDesk = lazy(() => import('./components/AutoDraftingDesk'));
+const HabitTracker     = lazy(() => import('./components/HabitTracker'));
 
 const TABS = [
   {
@@ -29,6 +30,12 @@ const TABS = [
     Component: SmartScheduler,
   },
   {
+    id: 'habits',
+    name: 'Habits',
+    subtitle: 'Build consistency. Log your daily achievements and track your streak.',
+    Component: HabitTracker,
+  },
+  {
     id: 'coach',
     name: 'AI Coach',
     subtitle: 'Your personal strategist. Talk through what\'s blocking you.',
@@ -41,6 +48,7 @@ const TABS = [
     Component: AutoDraftingDesk,
   },
 ];
+
 
 function AppShell() {
   const { state } = useApp();

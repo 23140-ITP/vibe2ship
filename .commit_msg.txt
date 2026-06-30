@@ -1,0 +1,5 @@
+fix: lazy load & render HabitTracker component in main views
+
+- Fixes E2E QA issue: Habits tab was not visible in top nav or main layout
+- Maps Habits tab icon to CheckSquare in Navigation
+- Stages clean bundle build compilation

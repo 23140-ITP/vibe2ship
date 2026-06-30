@@ -1,5 +1,5 @@
 import React from 'react';
-import { Settings as SettingsIcon, Play, Layers, Calendar, MessageCircle, Edit3, Clock } from 'lucide-react';
+import { Settings as SettingsIcon, Play, Layers, Calendar, MessageCircle, Edit3, Clock, CheckSquare } from 'lucide-react';
 
 const TAB_ICONS = {
   focus:     Play,
@@ -7,7 +7,9 @@ const TAB_ICONS = {
   scheduler: Calendar,
   coach:     MessageCircle,
   drafts:    Edit3,
+  habits:    CheckSquare,
 };
+
 
 export default function Navigation({ activeTab, setActiveTab, openSettings, tabs = [] }) {
   return (
