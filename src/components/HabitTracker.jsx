@@ -71,7 +71,10 @@ export default function HabitTracker() {
         <span className="badge" style={{ marginBottom: 12, display: 'inline-block' }}>Track New Habit</span>
         <form onSubmit={handleAdd} style={{ display: 'flex', gap: 12, alignItems: 'flex-end', flexWrap: 'wrap' }}>
           <div style={{ flex: 1, minWidth: 200 }}>
+            <label htmlFor="new-habit-title" className="sr-only">New Habit Title</label>
             <input 
+              id="new-habit-title"
+              name="habitTitle"
               type="text" 
               data-testid="input-habit-title" 
               className="input-text" 
@@ -124,13 +127,18 @@ export default function HabitTracker() {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <input 
-                      type="checkbox" 
-                      data-testid={`checkbox-habit-${habit.id}`} 
-                      checked={isChecked}
-                      onChange={() => toggleHabit(habit.id)}
-                      style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--color-primary)' }}
-                    />
+                    <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', alignItems: 'center' }}>
+                      <label htmlFor={`checkbox-habit-${habit.id}`} className="sr-only">Toggle completion for {habit.title || habit.name}</label>
+                      <input 
+                        id={`checkbox-habit-${habit.id}`}
+                        name="habitDone"
+                        type="checkbox" 
+                        data-testid={`checkbox-habit-${habit.id}`} 
+                        checked={isChecked}
+                        onChange={() => toggleHabit(habit.id)}
+                        style={{ width: 18, height: 18, cursor: 'pointer', accentColor: 'var(--color-primary)' }}
+                      />
+                    </form>
                     <span style={{ 
                       fontSize: 15, 
                       fontWeight: 500, 

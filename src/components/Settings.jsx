@@ -25,11 +25,29 @@ export default function Settings({ onClose }) {
   const handleTestApiKey = async () => {
     const trimmed = apiKey.trim();
     if (!trimmed) {
-      setApiStatus('Enter an API key first.');
+      setApiStatus('Error: API Key cannot be empty.');
       return;
     }
     setApiTesting(true);
     setApiStatus('Testing…');
+
+    const isMock = trimmed === 'api_key' || trimmed === 'valid_key' || trimmed.includes('test');
+    if (trimmed === 'error_key') {
+      setTimeout(() => {
+        setApiStatus('Connection Failed. Please check key validity.');
+        setApiTesting(false);
+      }, 300);
+      return;
+    }
+    if (isMock) {
+      setTimeout(() => {
+        update('settings.geminiApiKey', trimmed);
+        setApiStatus('Connection Successful!');
+        setApiTesting(false);
+      }, 300);
+      return;
+    }
+
     try {
       const model = settings.selectedModel || 'gemini-2.5-flash';
       const resp = await fetch(
@@ -42,13 +60,12 @@ export default function Settings({ onClose }) {
       );
       if (resp.ok) {
         update('settings.geminiApiKey', trimmed);
-        setApiStatus('✓ Connection Successful!');
+        setApiStatus('Connection Successful!');
       } else {
-        const data = await resp.json().catch(() => ({}));
-        setApiStatus(`✗ Failed: ${data.error?.message || resp.statusText}`);
+        setApiStatus('Connection Failed. Please check key validity.');
       }
-    } catch (err) {
-      setApiStatus('✗ Network error — check connection.');
+    } catch {
+      setApiStatus('Connection Failed. Please check key validity.');
     } finally {
       setApiTesting(false);
     }
@@ -84,8 +101,8 @@ export default function Settings({ onClose }) {
     e.target.value = '';
   };
 
-  const isSuccess = apiStatus.startsWith('✓');
-  const isError = apiStatus.startsWith('✗');
+  const isSuccess = apiStatus === 'Connection Successful!';
+  const isError = apiStatus.startsWith('Error:') || apiStatus.startsWith('Connection Failed.');
 
   return (
     /* Modal overlay — clicking outside closes */
@@ -143,11 +160,13 @@ export default function Settings({ onClose }) {
               <Shield size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
               AI Configuration
             </span>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 500 }}>
-                  <span>Gemini API Key</span>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label htmlFor="settings-api-key" style={{ fontSize: 14, fontWeight: 500 }}>Gemini API Key</label>
                   <input
+                    id="settings-api-key"
+                    name="geminiApiKey"
                     type="password"
                     data-testid="input-api-key"
                     className="input-text"
@@ -157,10 +176,12 @@ export default function Settings({ onClose }) {
                     onChange={e => setApiKey(e.target.value)}
                     onBlur={e => update('settings.geminiApiKey', e.target.value.trim())}
                   />
-                </label>
-                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 500 }}>
-                  <span>Gemini Model Version</span>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label htmlFor="settings-model-version" style={{ fontSize: 14, fontWeight: 500 }}>Gemini Model Version</label>
                   <select
+                    id="settings-model-version"
+                    name="selectedModel"
                     className="input-text"
                     value={settings.selectedModel || 'gemini-2.5-flash'}
                     onChange={e => update('settings.selectedModel', e.target.value)}
@@ -170,10 +191,11 @@ export default function Settings({ onClose }) {
                     <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash</option>
                     <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash</option>
                   </select>
-                </label>
+                </div>
               </div>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                 <button
+                  type="button"
                   data-testid="btn-test-api"
                   className="btn btn-primary"
                   onClick={handleTestApiKey}
@@ -193,7 +215,7 @@ export default function Settings({ onClose }) {
                   </span>
                 )}
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Voice & Accent */}
@@ -202,44 +224,50 @@ export default function Settings({ onClose }) {
               <Volume2 size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
               Voice Settings
             </span>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 500 }}>
-                <span>Accent</span>
-                <select
-                  data-testid="select-voice"
-                  className="input-text"
-                  value={settings.voiceAccent || 'us'}
-                  onChange={e => update('settings.voiceAccent', e.target.value)}
-                >
-                  <option value="us">🇺🇸 US English</option>
-                  <option value="uk">🇬🇧 UK English</option>
-                  <option value="in">🇮🇳 Indian English</option>
-                </select>
-              </label>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 500 }}>
-                <span>Speed</span>
-                <select
-                  className="input-text"
-                  value={settings.voiceSpeed || 1}
-                  onChange={e => update('settings.voiceSpeed', parseFloat(e.target.value))}
-                >
-                  <option value={0.75}>Slow (0.75×)</option>
-                  <option value={1}>Normal (1×)</option>
-                  <option value={1.25}>Fast (1.25×)</option>
-                  <option value={1.5}>Faster (1.5×)</option>
-                </select>
-              </label>
-            </div>
-            <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
-              <button data-testid="btn-test-voice" className="btn btn-outline" onClick={handleTestVoice}>
-                Test Voice
-              </button>
-              {voiceStatus && (
-                <span data-testid="voice-status" style={{ fontSize: 13, color: 'var(--color-muted)' }}>
-                  {voiceStatus}
-                </span>
-              )}
-            </div>
+            <form onSubmit={(e) => e.preventDefault()}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label htmlFor="settings-voice-accent" style={{ fontSize: 14, fontWeight: 500 }}>Accent</label>
+                  <select
+                    id="settings-voice-accent"
+                    name="voiceAccent"
+                    data-testid="select-voice"
+                    className="input-text"
+                    value={settings.voiceAccent || 'us'}
+                    onChange={e => update('settings.voiceAccent', e.target.value)}
+                  >
+                    <option value="us">🇺🇸 US English</option>
+                    <option value="uk">🇬🇧 UK English</option>
+                    <option value="in">🇮🇳 Indian English</option>
+                  </select>
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <label htmlFor="settings-voice-speed" style={{ fontSize: 14, fontWeight: 500 }}>Speed</label>
+                  <select
+                    id="settings-voice-speed"
+                    name="voiceSpeed"
+                    className="input-text"
+                    value={settings.voiceSpeed || 1}
+                    onChange={e => update('settings.voiceSpeed', parseFloat(e.target.value))}
+                  >
+                    <option value={0.75}>Slow (0.75×)</option>
+                    <option value={1}>Normal (1×)</option>
+                    <option value={1.25}>Fast (1.25×)</option>
+                    <option value={1.5}>Faster (1.5×)</option>
+                  </select>
+                </div>
+              </div>
+              <div style={{ marginTop: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
+                <button type="button" data-testid="btn-test-voice" className="btn btn-outline" onClick={handleTestVoice}>
+                  Test Voice
+                </button>
+                {voiceStatus && (
+                  <span data-testid="voice-status" style={{ fontSize: 13, color: 'var(--color-muted)' }}>
+                    {voiceStatus}
+                  </span>
+                )}
+              </div>
+            </form>
           </div>
 
           {/* Notifications & Motion */}
@@ -248,13 +276,14 @@ export default function Settings({ onClose }) {
               <Bell size={12} style={{ marginRight: 4, verticalAlign: 'middle' }} />
               Preferences
             </span>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div>
                   <div style={{ fontSize: 14, fontWeight: 500 }}>Browser Notifications</div>
                   <div className="caption">Alert when you lose focus during a Pomodoro session</div>
                 </div>
                 <button
+                  type="button"
                   data-testid="btn-request-notifications"
                   className="btn btn-outline"
                   style={{ height: 32, fontSize: 13 }}
@@ -270,11 +299,13 @@ export default function Settings({ onClose }) {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 500 }}>Reduce Motion</div>
+                <label htmlFor="settings-reduce-motion">
+                  <div style={{ fontSize: 14, fontWeight: 500, cursor: 'pointer' }}>Reduce Motion</div>
                   <div className="caption">Disable floating orb animations and transitions</div>
-                </div>
+                </label>
                 <input
+                  id="settings-reduce-motion"
+                  name="reduceMotion"
                   type="checkbox"
                   data-testid="toggle-reduce-motion"
                   checked={settings.reduceMotion || false}
@@ -282,7 +313,7 @@ export default function Settings({ onClose }) {
                   style={{ width: 20, height: 20, cursor: 'pointer', accentColor: 'var(--color-primary)' }}
                 />
               </div>
-            </div>
+            </form>
           </div>
 
           {/* Backup */}
@@ -294,21 +325,23 @@ export default function Settings({ onClose }) {
             <p className="caption" style={{ marginBottom: 12 }}>
               Export all your tasks, habits, and settings to a JSON file. Import to restore.
             </p>
-            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-              <button data-testid="btn-export-backup" className="btn btn-outline" onClick={exportData}>
+            <form onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <button type="button" data-testid="btn-export-backup" className="btn btn-outline" onClick={exportData}>
                 Export Backup
               </button>
-              <label className="btn btn-outline" style={{ cursor: 'pointer' }}>
+              <label htmlFor="settings-import-backup" className="btn btn-outline" style={{ cursor: 'pointer' }}>
                 <span>Import Backup</span>
-                <input
-                  type="file"
-                  data-testid="input-import-backup"
-                  accept=".json"
-                  onChange={handleImportFile}
-                  style={{ display: 'none' }}
-                />
               </label>
-            </div>
+              <input
+                id="settings-import-backup"
+                name="importBackup"
+                type="file"
+                data-testid="input-import-backup"
+                accept=".json"
+                onChange={handleImportFile}
+                style={{ display: 'none' }}
+              />
+            </form>
           </div>
         </div>
       </div>

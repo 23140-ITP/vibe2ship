@@ -37,12 +37,8 @@ export default function AutoDraftingDesk() {
   };
 
   const handleGenerate = async () => {
-    if (!settings.geminiApiKey) {
-      alert('Add your Gemini API key in Settings first.');
-      return;
-    }
-
     setGenerating(true);
+
     try {
       let taskName = 'General Task';
       let subtaskName = 'General Subtask';

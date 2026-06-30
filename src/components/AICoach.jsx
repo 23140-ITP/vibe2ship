@@ -113,19 +113,21 @@ async function executeTool(name, args, state, actions) {
         subtasks: []
       });
       return { success: true, message: `Task "${args.title}" created successfully in ${args.quadrant}` };
-    case 'delete_task':
+    case 'delete_task': {
       const taskToDelete = state.tasks.find(t => t.id === Number(args.taskId));
       if (!taskToDelete) return { error: `Task with ID ${args.taskId} not found` };
       actions.deleteTask(taskToDelete.id);
       return { success: true, message: `Task "${taskToDelete.title}" deleted successfully` };
+    }
     case 'add_habit':
       actions.addHabit(args.name);
       return { success: true, message: `Habit "${args.name}" added successfully` };
-    case 'toggle_habit':
+    case 'toggle_habit': {
       const habitToToggle = state.habits.find(h => h.id === Number(args.habitId));
       if (!habitToToggle) return { error: `Habit with ID ${args.habitId} not found` };
       actions.toggleHabit(habitToToggle.id);
       return { success: true, message: `Habit "${habitToToggle.name}" status toggled` };
+    }
     case 'get_habits_and_streaks':
       return {
         habits: state.habits.map(h => ({
@@ -135,12 +137,13 @@ async function executeTool(name, args, state, actions) {
           loggedToday: (h.logs || []).includes(actions.todayKey)
         }))
       };
-    case 'breakdown_task':
+    case 'breakdown_task': {
       const taskToBreak = state.tasks.find(t => t.id === Number(args.taskId));
       if (!taskToBreak) return { error: `Task with ID ${args.taskId} not found` };
       const subtasks = args.subtasks.map(text => ({ text, done: false }));
       actions.updateTask(taskToBreak.id, { subtasks });
       return { success: true, message: `Task "${taskToBreak.title}" broken down into ${subtasks.length} subtasks` };
+    }
     default:
       throw new Error(`Unknown tool: ${name}`);
   }
@@ -244,11 +247,16 @@ export default function AICoach() {
     setInput('');
     addChatMessage({ role: 'user', text: trimmed });
 
-    const isMock = !settings.geminiApiKey || settings.geminiApiKey === 'api_key' || settings.geminiApiKey === 'valid_key' || settings.geminiApiKey.includes('test');
-    
-    if (isMock) {
-      setLoading(true);
-      setTimeout(() => {
+    setLoading(true);
+    try {
+      const actions = { addTask, deleteTask, updateTask, toggleSubtask, addHabit, toggleHabit, deleteHabit, todayKey };
+      const reply = await callGemini(settings.geminiApiKey, settings.selectedModel, persona, chatHistory, trimmed, state, actions);
+      addChatMessage({ role: 'assistant', text: reply });
+      speak(reply);
+      setLoading(false);
+    } catch (err) {
+      const isMock = !settings.geminiApiKey || settings.geminiApiKey === 'api_key' || settings.geminiApiKey === 'valid_key' || settings.geminiApiKey.includes('test');
+      if (isMock) {
         let reply = '';
         if (trimmed.toLowerCase().includes('streak')) {
           const maxStreak = habits.reduce((max, h) => Math.max(max, h.streak || 0), 0);
@@ -260,22 +268,13 @@ export default function AICoach() {
         }
         addChatMessage({ role: 'assistant', text: reply });
         speak(reply);
-        setLoading(false);
-      }, 50);
-      return;
+      } else {
+        addChatMessage({ role: 'assistant', text: `❌ Error: ${err.message}` });
+      }
+      setLoading(false);
     }
-
-    setLoading(true);
-    try {
-      const actions = { addTask, deleteTask, updateTask, toggleSubtask, addHabit, toggleHabit, deleteHabit, todayKey };
-      const reply = await callGemini(settings.geminiApiKey, settings.selectedModel, persona, chatHistory, trimmed, state, actions);
-      addChatMessage({ role: 'assistant', text: reply });
-      speak(reply);
-    } catch (err) {
-      addChatMessage({ role: 'assistant', text: `❌ Error: ${err.message}` });
-    }
-    setLoading(false);
   };
+
 
   const handleBreakdownTask = async () => {
     const prompt = 'I have a complex task I need help breaking down. Ask me what it is and then give me 4-5 concrete, actionable subtasks.';
@@ -338,16 +337,21 @@ export default function AICoach() {
           <Sparkles size={18} style={{ color: 'var(--color-primary)' }} />
           <span style={{ fontWeight: 600, fontFamily: "'EB Garamond', serif", fontSize: '1.25rem' }}>AI Companion</span>
         </div>
-        <select 
-          className="input-text"
-          value={selectedPersona}
-          onChange={(e) => handlePersonaChange(e.target.value)}
-          style={{ width: 'auto', padding: '4px 8px', fontSize: '13px', cursor: 'pointer' }}
-        >
-          {PERSONAS.map(p => (
-            <option key={p.id} value={p.id}>{p.label}</option>
-          ))}
-        </select>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <label htmlFor="coach-persona-select" className="sr-only">Coach Persona</label>
+          <select 
+            id="coach-persona-select"
+            name="coachPersona"
+            className="input-text"
+            value={selectedPersona}
+            onChange={(e) => handlePersonaChange(e.target.value)}
+            style={{ width: 'auto', padding: '4px 8px', fontSize: '13px', cursor: 'pointer' }}
+          >
+            {PERSONAS.map(p => (
+              <option key={p.id} value={p.id}>{p.label}</option>
+            ))}
+          </select>
+        </form>
       </div>
 
       {/* Message Output Thread */}
@@ -438,7 +442,10 @@ export default function AICoach() {
           onSubmit={(e) => { e.preventDefault(); sendMessage(); }}
           style={{ display: 'flex', gap: '8px', position: 'relative' }}
         >
+          <label htmlFor="chat-message-input" className="sr-only">Ask the Coach</label>
           <input 
+            id="chat-message-input"
+            name="chatMessage"
             type="text"
             className="input-text"
             placeholder={`Ask the Coach...`}

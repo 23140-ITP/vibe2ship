@@ -27,7 +27,8 @@ A modular client-side React SPA built with Vite. Centralized state is managed vi
 | 4 | AI Coach & Drafting Desk | Chat sidebar, voice input/output, subtask checklist breakdown, split-pane email/template drafting desk | M3 | PLANNED |
 | 5 | Focused Workspace & Focus Guard | Pomodoro timer (`Date.now()`), ambient sounds, Visibility API Page tracker triggering browser notifications | M2 | PLANNED |
 | 6 | Matrix & Smart Scheduler | 2x2 prioritization matrix, AI Auto-Sort, weekly scheduler, peak energy hour scheduling, `.ics` exporter | M3, M5 | PLANNED |
-| 7 | Final E2E Pass & Hardening | Integration and passing 100% of E2E test suite (Tiers 1-4), followed by Tier 5 Adversarial Hardening | M1-M6, TEST_READY.md | PLANNED |
+| 7 | Final E2E Pass & Hardening | Integration and passing 100% of E2E test suite (Tiers 1-4), followed by Tier 5 Adversarial Hardening | M1-M6, TEST_READY.md | DONE |
+| 8 | Workspace Upgrade | Implement proactive context-aware AI nudges (R1) and HTML Form Standards & Console Hardening (R2) | M7 | PLANNED |
 
 ## Interface Contracts
 

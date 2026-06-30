@@ -193,20 +193,24 @@ export default function SmartScheduler() {
       {/* Controls Card */}
       <div className="card" style={{ display: 'flex', gap: 20, alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', padding: 20 }}>
         <div style={{ display: 'flex', gap: 16, alignItems: 'center', flexWrap: 'wrap' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500 }}>
-            <span>Energy Preference</span>
-            <select
-              data-testid="select-energy-level"
-              className="input-text"
-              value={energyLevel}
-              onChange={e => setEnergyLevel(e.target.value)}
-              style={{ cursor: 'pointer', height: 36, padding: '0 8px' }}
-            >
-              <option value="high">high</option>
-              <option value="medium">medium</option>
-              <option value="low">low</option>
-            </select>
-          </label>
+          <form onSubmit={(e) => e.preventDefault()} style={{ display: 'inline-block' }}>
+            <label htmlFor="energy-preference-select" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 14, fontWeight: 500 }}>
+              <span>Energy Preference</span>
+              <select
+                id="energy-preference-select"
+                name="energyPreference"
+                data-testid="select-energy-level"
+                className="input-text"
+                value={energyLevel}
+                onChange={e => setEnergyLevel(e.target.value)}
+                style={{ cursor: 'pointer', height: 36, padding: '0 8px' }}
+              >
+                <option value="high">high</option>
+                <option value="medium">medium</option>
+                <option value="low">low</option>
+              </select>
+            </label>
+          </form>
           <button
             data-testid="btn-auto-schedule"
             className="btn btn-primary"
@@ -289,20 +293,25 @@ export default function SmartScheduler() {
                       )}
 
                       {/* Manual Assign Select */}
-                      <select
-                        data-testid={`select-reassign-${day}-${hourKey}`}
-                        value={slotTask ? slotTask.id : ''}
-                        onChange={e => handleManualAssign(day, hourKey, e.target.value)}
-                        className="input-text"
-                        style={{ fontSize: 11, height: 22, padding: '0 4px', cursor: 'pointer', width: '100%', border: 'none', background: 'transparent' }}
-                      >
-                        <option value="">-- Assign --</option>
-                        {tasks.map(t => (
-                          <option key={t.id} value={t.id}>
-                            {t.title}
-                          </option>
-                        ))}
-                      </select>
+                      <form onSubmit={(e) => e.preventDefault()}>
+                        <label htmlFor={`select-reassign-${day}-${hourKey}`} className="sr-only">Assign task to {day} {hourKey}</label>
+                        <select
+                          id={`select-reassign-${day}-${hourKey}`}
+                          name="reassignTask"
+                          data-testid={`select-reassign-${day}-${hourKey}`}
+                          value={slotTask ? slotTask.id : ''}
+                          onChange={e => handleManualAssign(day, hourKey, e.target.value)}
+                          className="input-text"
+                          style={{ fontSize: 11, height: 22, padding: '0 4px', cursor: 'pointer', width: '100%', border: 'none', background: 'transparent' }}
+                        >
+                          <option value="">-- Assign --</option>
+                          {tasks.map(t => (
+                            <option key={t.id} value={t.id}>
+                              {t.title}
+                            </option>
+                          ))}
+                        </select>
+                      </form>
                     </div>
                   );
                 })}

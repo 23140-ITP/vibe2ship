@@ -129,8 +129,10 @@ No extra text.`;
         <span className="badge" style={{ marginBottom: 12, display: 'inline-block' }}>Add Task</span>
         <form onSubmit={handleAdd} style={{ display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
           <div style={{ flex: '1 1 200px' }}>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>Task Title</label>
+            <label htmlFor="new-task-title" style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>Task Title</label>
             <input 
+              id="new-task-title"
+              name="taskTitle"
               data-testid="input-task-title" 
               type="text" 
               className="input-text" 
@@ -141,8 +143,10 @@ No extra text.`;
             />
           </div>
           <div style={{ flex: '1 1 250px' }}>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>Task Description</label>
+            <label htmlFor="new-task-desc" style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>Task Description</label>
             <input 
+              id="new-task-desc"
+              name="taskDesc"
               data-testid="input-task-desc" 
               type="text" 
               className="input-text" 
@@ -153,8 +157,10 @@ No extra text.`;
             />
           </div>
           <div style={{ flex: '0 0 auto' }}>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>Quadrant</label>
+            <label htmlFor="new-task-quadrant" style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>Quadrant</label>
             <select 
+              id="new-task-quadrant"
+              name="taskQuadrant"
               data-testid="select-new-task-quadrant" 
               className="input-text" 
               style={{ cursor: 'pointer' }}
@@ -168,8 +174,10 @@ No extra text.`;
             </select>
           </div>
           <div style={{ flex: '0 0 auto' }}>
-            <label style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>Energy Level</label>
+            <label htmlFor="new-task-energy" style={{ display: 'block', fontSize: 13, marginBottom: 4, fontWeight: 500 }}>Energy Level</label>
             <select 
+              id="new-task-energy"
+              name="taskEnergy"
               className="input-text" 
               style={{ cursor: 'pointer' }}
               value={newTaskEnergy} 
@@ -268,8 +276,24 @@ function TaskCard({ task, quadrantColor, onDelete, onToggleSub, onDragStart, set
     }
     setBreakingDown(true);
     try {
-      if (settings.geminiApiKey === 'api_key' || settings.geminiApiKey === 'valid_key' || settings.geminiApiKey.includes('test')) {
-        // Mock subtasks
+      const isMock = settings.geminiApiKey === 'api_key' || settings.geminiApiKey === 'valid_key' || settings.geminiApiKey.includes('test');
+      if (isMock) {
+        throw new Error('Using mock fallback');
+      }
+      const prompt = `Break down this task into 3-5 concrete, actionable subtasks:\n"${task.title}"\n\nReturn ONLY a JSON array of strings, e.g. ["subtask 1","subtask 2"]. No extra text.`;
+      const raw = await callGemini(settings.geminiApiKey, settings.selectedModel, prompt);
+      const match = raw.match(/\[[\s\S]*\]/);
+      if (match) {
+        const items = JSON.parse(match[0]);
+        const subtasks = items.map(s => ({ text: s, done: false }));
+        onUpdateTask(task.id, { subtasks });
+        setExpanded(true);
+      } else {
+        throw new Error('Invalid JSON structure');
+      }
+    } catch (err) {
+      const isMock = !settings.geminiApiKey || settings.geminiApiKey === 'api_key' || settings.geminiApiKey === 'valid_key' || settings.geminiApiKey.includes('test');
+      if (isMock) {
         const subtasks = [
           { text: "Subtask 1: Setup outline", done: false },
           { text: "Subtask 2: Gather materials", done: false },
@@ -278,22 +302,13 @@ function TaskCard({ task, quadrantColor, onDelete, onToggleSub, onDragStart, set
         onUpdateTask(task.id, { subtasks });
         setExpanded(true);
       } else {
-        const prompt = `Break down this task into 3-5 concrete, actionable subtasks:\n"${task.title}"\n\nReturn ONLY a JSON array of strings, e.g. ["subtask 1","subtask 2"]. No extra text.`;
-        const raw = await callGemini(settings.geminiApiKey, settings.selectedModel, prompt);
-        const match = raw.match(/\[[\s\S]*\]/);
-        if (match) {
-          const items = JSON.parse(match[0]);
-          const subtasks = items.map(s => ({ text: s, done: false }));
-          onUpdateTask(task.id, { subtasks });
-          setExpanded(true);
-        }
+        addChatMessage({
+          role: 'assistant',
+          text: `API Connection Failed. Check your connection or API key.`
+        });
       }
-    } catch (err) {
-      addChatMessage({
-        role: 'assistant',
-        text: 'API Connection Failed. Check your connection or API key.'
-      });
     }
+
     setBreakingDown(false);
   };
 
@@ -343,18 +358,23 @@ function TaskCard({ task, quadrantColor, onDelete, onToggleSub, onDragStart, set
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
             {task.energy && <span style={{ fontSize: 11, color: quadrantColor, fontWeight: 600 }}>{task.energy}</span>}
             
-            <select
-              data-testid="select-task-quadrant"
-              value={task.quadrant}
-              onChange={e => onUpdateTask(task.id, { quadrant: e.target.value })}
-              className="input-text"
-              style={{ fontSize: 11, height: 22, padding: '0 4px', cursor: 'pointer' }}
-            >
-              <option value="Q1">Q1: Do</option>
-              <option value="Q2">Q2: Schedule</option>
-              <option value="Q3">Q3: Delegate</option>
-              <option value="Q4">Q4: Eliminate</option>
-            </select>
+            <form onSubmit={(e) => e.preventDefault()} style={{ display: 'inline-block' }}>
+              <label htmlFor={`select-quadrant-${task.id}`} className="sr-only">Change quadrant</label>
+              <select
+                id={`select-quadrant-${task.id}`}
+                name="taskQuadrant"
+                data-testid="select-task-quadrant"
+                value={task.quadrant}
+                onChange={e => onUpdateTask(task.id, { quadrant: e.target.value })}
+                className="input-text"
+                style={{ fontSize: 11, height: 22, padding: '0 4px', cursor: 'pointer' }}
+              >
+                <option value="Q1">Q1: Do</option>
+                <option value="Q2">Q2: Schedule</option>
+                <option value="Q3">Q3: Delegate</option>
+                <option value="Q4">Q4: Eliminate</option>
+              </select>
+            </form>
           </div>
         </div>
       </div>
@@ -362,20 +382,24 @@ function TaskCard({ task, quadrantColor, onDelete, onToggleSub, onDragStart, set
       {expanded && task.subtasks?.length > 0 && (
         <div style={{ marginTop: 8, paddingLeft: 22, display: 'flex', flexDirection: 'column', gap: 6 }}>
           {task.subtasks.map((sub, i) => (
-            <label 
-              key={i} 
-              data-testid={`subtask-item-${task.id}-${i}`} 
-              style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: sub.done ? 'var(--color-muted)' : 'var(--color-body)' }}
-            >
-              <input 
-                type="checkbox" 
-                data-testid={`checkbox-subtask-${task.id}-${i}`}
-                checked={sub.done} 
-                onChange={() => onToggleSub(i)}
-                style={{ accentColor: quadrantColor, cursor: 'pointer' }} 
-              />
-              <span style={{ textDecoration: sub.done ? 'line-through' : 'none' }}>{sub.text}</span>
-            </label>
+            <form key={i} onSubmit={(e) => e.preventDefault()}>
+              <label 
+                htmlFor={`checkbox-subtask-${task.id}-${i}`}
+                data-testid={`subtask-item-${task.id}-${i}`} 
+                style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 13, color: sub.done ? 'var(--color-muted)' : 'var(--color-body)' }}
+              >
+                <input 
+                  id={`checkbox-subtask-${task.id}-${i}`}
+                  name={`subtask-${i}`}
+                  type="checkbox" 
+                  data-testid={`checkbox-subtask-${task.id}-${i}`}
+                  checked={sub.done} 
+                  onChange={() => onToggleSub(i)}
+                  style={{ accentColor: quadrantColor, cursor: 'pointer' }} 
+                />
+                <span style={{ textDecoration: sub.done ? 'line-through' : 'none' }}>{sub.text}</span>
+              </label>
+            </form>
           ))}
         </div>
       )}

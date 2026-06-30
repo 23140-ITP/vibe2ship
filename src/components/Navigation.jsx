@@ -55,7 +55,7 @@ export default function Navigation({ activeTab, setActiveTab, openSettings, tabs
         <div className="nav-actions">
           <button
             className="btn btn-outline btn-settings"
-            data-testid="btn-open-settings"
+            data-testid="tab-settings"
             onClick={openSettings}
             aria-label="Open Settings"
           >

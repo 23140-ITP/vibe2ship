@@ -45,6 +45,7 @@ const defaultState = {
   },
   ambientVolumes: { rain: 0.4, forest: 0, whitenoise: 0, lofi: 0 },
   chatHistory: [],
+  activeTaskId: null,
 };
 
 export function AppProvider({ children }) {
@@ -96,7 +97,11 @@ export function AppProvider({ children }) {
   }, []);
 
   const deleteTask = useCallback((id) => {
-    setState(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== id) }));
+    setState(prev => ({
+      ...prev,
+      tasks: prev.tasks.filter(t => t.id !== id),
+      activeTaskId: prev.activeTaskId === id ? null : prev.activeTaskId
+    }));
   }, []);
 
   const toggleSubtask = useCallback((taskId, subtaskIdx) => {

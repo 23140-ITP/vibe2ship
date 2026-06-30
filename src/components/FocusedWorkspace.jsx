@@ -2,6 +2,13 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Play, Pause, RotateCcw, Volume2, VolumeX, Eye, Bell, BellOff } from 'lucide-react';
 import { useApp } from '../AppContext';
 
+const PERSONAS = [
+  { id: 'tough-love', label: 'Tough Love', prompt: 'You are a brutally honest but caring productivity coach. Be direct, challenge excuses, and push the user to act. Keep responses under 80 words.' },
+  { id: 'yc-partner', label: 'YC Partner', prompt: 'You are a Y Combinator partner giving startup-style advice on productivity and execution. Be concise, high-signal, and actionable. Keep responses under 80 words.' },
+  { id: 'zen-master', label: 'Zen Master', prompt: 'You are a calm, wise productivity mentor who uses mindfulness principles. Be peaceful, thoughtful, and focus on sustainable habits. Keep responses under 80 words.' },
+  { id: 'hype-coach', label: 'Hype Coach', prompt: 'You are an enthusiastic, energetic motivational coach. Be encouraging, pumped up, and make the user feel unstoppable. Keep responses under 80 words. Use occasional emojis.' },
+];
+
 // ---- Ambient sound sources (Web Audio API generated oscillators / noise) ----
 function createNoiseBuffer(audioCtx) {
   const bufferSize = audioCtx.sampleRate * 2;
@@ -112,6 +119,7 @@ export default function FocusedWorkspace() {
   const [timeLeft, setTimeLeft] = useState(pomodoro.totalSeconds);
   const [focusGuardActive, setFocusGuardActive] = useState(true);
   const [showWarning, setShowWarning] = useState(false);
+  const [nudgeText, setNudgeText] = useState('👀 Focus Guard Warning: You left the tab! Stay focused on your active task.');
   const tickRef = useRef(null);
 
   useAmbientEngine(ambientVolumes);
@@ -184,15 +192,77 @@ export default function FocusedWorkspace() {
 
   // ---- Focus Guard ----
   useEffect(() => {
-    const handler = () => {
+    const handler = async () => {
       if (document.hidden) {
-        setShowWarning(true);
         if (pomodoro.phase === 'focus' && focusGuardActive) {
-          if (Notification.permission === 'granted') {
-            new Notification('👀 Focus Guard', { body: 'Hey! Stay on task.' });
-          } else {
-            // fallback alert
+          const activeTask = state.tasks.find(t => t.id === state.activeTaskId);
+          let taskTitle = activeTask ? activeTask.title : null;
+          if (!taskTitle) {
+            const firstIncomplete = state.tasks.find(t => !t.completed);
+            taskTitle = firstIncomplete ? firstIncomplete.title : "staying focused";
           }
+
+          let nudge = '';
+          const personaId = state.settings.coachPersona || 'tough-love';
+
+          try {
+            const isMockKey = state.settings.geminiApiKey === 'api_key' || state.settings.geminiApiKey === 'valid_key' || state.settings.geminiApiKey.includes('test');
+            if (isMockKey) {
+              throw new Error('Using mock fallback');
+            }
+
+            const coachPersona = PERSONAS.find(p => p.id === personaId) || PERSONAS[0];
+            const resp = await fetch('/api/chat', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-gemini-key': state.settings.geminiApiKey
+              },
+              body: JSON.stringify({
+                model: state.settings.selectedModel || 'gemini-2.5-flash',
+                persona: coachPersona,
+                contents: [
+                  {
+                    role: 'user',
+                    parts: [{ text: `Generate a short warning nudge for leaving the tab while I should be focusing on: ${taskTitle}. Speak in your persona voice.` }]
+                  }
+                ]
+              })
+            });
+            if (!resp.ok) throw new Error('API error');
+            const data = await resp.json();
+            nudge = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+          } catch {
+            if (personaId === 'tough-love') {
+              nudge = `Hey! Stop slacking. You're supposed to be focusing on: ${taskTitle}. Back to work!`;
+            } else if (personaId === 'yc-partner') {
+              nudge = `Execution is everything. You need to focus on: ${taskTitle} to build momentum. Get back to it.`;
+            } else if (personaId === 'zen-master') {
+              nudge = `Breathe in, breathe out. Let go of distractions and gently bring your awareness back to: ${taskTitle}.`;
+            } else {
+              nudge = `You've got this! Let's stay locked in on: ${taskTitle}. No distractions can stop you now! 🚀🔥`;
+            }
+          }
+
+
+          setNudgeText(nudge);
+          setShowWarning(true);
+
+          if (window.speechSynthesis) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(nudge);
+            if (state.settings.voiceSpeed) {
+              utterance.rate = state.settings.voiceSpeed;
+            }
+            window.speechSynthesis.speak(utterance);
+          }
+
+          if (Notification.permission === 'granted') {
+            new Notification('👀 Focus Guard', { body: nudge });
+          }
+        } else {
+          setNudgeText('👀 Focus Guard Warning: You left the tab! Stay focused on your active task.');
+          setShowWarning(true);
         }
       } else {
         setShowWarning(false);
@@ -200,7 +270,7 @@ export default function FocusedWorkspace() {
     };
     document.addEventListener('visibilitychange', handler);
     return () => document.removeEventListener('visibilitychange', handler);
-  }, [focusGuardActive, pomodoro.phase]);
+  }, [focusGuardActive, pomodoro.phase, state.tasks, state.activeTaskId, state.settings]);
 
   const progress = pomodoro.phase === 'idle' ? 0 : 1 - timeLeft / pomodoro.totalSeconds;
   const circumference = 2 * Math.PI * 88;
@@ -216,7 +286,7 @@ export default function FocusedWorkspace() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
       {showWarning && (
         <div data-testid="visibility-warning" style={{ background: '#fef2f2', border: '1px solid #fee2e2', color: '#991b1b', padding: '12px 16px', borderRadius: 8, fontWeight: 600 }}>
-          👀 Focus Guard Warning: You left the tab! Stay focused on your active task.
+          {nudgeText}
         </div>
       )}
 
@@ -224,6 +294,26 @@ export default function FocusedWorkspace() {
         {/* Timer Card */}
         <div className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px', padding: '40px 24px' }}>
           <span className="badge">{pomodoro.phase === 'focus' ? '🍅 Focus' : pomodoro.phase === 'break' ? '☕ Break' : '⏸ Idle'}</span>
+          
+          <form id="active-task-form" onSubmit={(e) => e.preventDefault()} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <label htmlFor="focus-task-select" style={{ fontSize: 13, fontWeight: 500, color: 'var(--color-ink)' }}>Focus Task</label>
+            <select
+              id="focus-task-select"
+              name="focusTask"
+              className="input-text"
+              style={{ width: '100%', height: 36, padding: '0 8px' }}
+              value={state.activeTaskId || ''}
+              onChange={(e) => {
+                const val = e.target.value ? Number(e.target.value) : null;
+                update('activeTaskId', val);
+              }}
+            >
+              <option value="">-- Select a Focus Task --</option>
+              {state.tasks.filter(t => !t.completed).map(t => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
+          </form>
           
           {/* Circular Timer */}
           <div style={{ position: 'relative', width: 200, height: 200 }}>
@@ -271,20 +361,25 @@ export default function FocusedWorkspace() {
                 {m}m
               </button>
             ))}
-            <input 
-              type="number"
-              data-testid="input-pomodoro-duration"
-              className="input-text"
-              style={{ width: 70, height: 32, padding: '0 8px', fontSize: 13 }}
-              value={pomodoro.duration}
-              onChange={handleDurationInputChange}
-              onBlur={e => {
-                if (e.target.value === '' || parseInt(e.target.value, 10) <= 0) {
-                  setDuration(25);
-                }
-              }}
-              disabled={pomodoro.phase !== 'idle'}
-            />
+            <form onSubmit={(e) => e.preventDefault()} style={{ display: 'inline-block' }}>
+              <label htmlFor="pomodoro-duration-input" className="sr-only">Pomodoro Duration</label>
+              <input 
+                id="pomodoro-duration-input"
+                name="pomodoroDuration"
+                type="number"
+                data-testid="input-pomodoro-duration"
+                className="input-text"
+                style={{ width: 70, height: 32, padding: '0 8px', fontSize: 13 }}
+                value={pomodoro.duration}
+                onChange={handleDurationInputChange}
+                onBlur={e => {
+                  if (e.target.value === '' || parseInt(e.target.value, 10) <= 0) {
+                    setDuration(25);
+                  }
+                }}
+                disabled={pomodoro.phase !== 'idle'}
+              />
+            </form>
           </div>
 
           {/* Controls */}
@@ -314,11 +409,12 @@ export default function FocusedWorkspace() {
           {sounds.map(({ id, label }) => {
             const testId = id === 'whitenoise' ? 'white-noise' : id;
             return (
-              <div key={id} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <form key={id} onSubmit={(e) => e.preventDefault()} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-ink)' }}>{label}</span>
+                  <label htmlFor={`ambient-${id}`} style={{ fontSize: 14, fontWeight: 500, color: 'var(--color-ink)', cursor: 'pointer' }}>{label}</label>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <button 
+                      type="button"
                       data-testid={`btn-mute-${testId}`}
                       onClick={() => {
                         if (ambientVolumes[id] > 0) {
@@ -340,6 +436,7 @@ export default function FocusedWorkspace() {
                 </div>
                 <input 
                   id={`ambient-${id}`} 
+                  name={`ambientVolume-${id}`}
                   type="range" 
                   min={0} 
                   max={100} 
@@ -349,7 +446,7 @@ export default function FocusedWorkspace() {
                   style={{ width: '100%', accentColor: 'var(--color-primary)', cursor: 'pointer' }}
                   onChange={e => update(`ambientVolumes.${id}`, parseFloat(e.target.value) / 100)} 
                 />
-              </div>
+              </form>
             );
           })}
         </div>
