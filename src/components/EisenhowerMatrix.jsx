@@ -11,13 +11,15 @@ const QUADRANTS = [
 
 const ENERGY_LEVELS = ['High Focus', 'Medium', 'Low'];
 
-async function callGemini(apiKey, prompt) {
-  return fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`, {
+async function callGemini(apiKey, model, prompt) {
+  const modelName = model || 'gemini-2.5-flash';
+  return fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] }),
   }).then(r => r.json()).then(d => d.candidates?.[0]?.content?.parts?.[0]?.text || '');
 }
+
 
 export default function EisenhowerMatrix() {
   const { state, addTask, updateTask, deleteTask, toggleSubtask, addChatMessage } = useApp();
@@ -87,7 +89,7 @@ ${taskList}
 
 Return ONLY valid JSON array: [{"id": <number>, "quadrant": "Q1"|"Q2"|"Q3"|"Q4", "energy": "High Focus"|"Medium"|"Low"}]
 No extra text.`;
-        const raw = await callGemini(settings.geminiApiKey, prompt);
+        const raw = await callGemini(settings.geminiApiKey, settings.selectedModel, prompt);
         const match = raw.match(/\[[\s\S]*\]/);
         if (match) {
           const results = JSON.parse(match[0]);
@@ -276,7 +278,7 @@ function TaskCard({ task, quadrantColor, onDelete, onToggleSub, onDragStart, set
         setExpanded(true);
       } else {
         const prompt = `Break down this task into 3-5 concrete, actionable subtasks:\n"${task.title}"\n\nReturn ONLY a JSON array of strings, e.g. ["subtask 1","subtask 2"]. No extra text.`;
-        const raw = await callGemini(settings.geminiApiKey, prompt);
+        const raw = await callGemini(settings.geminiApiKey, settings.selectedModel, prompt);
         const match = raw.match(/\[[\s\S]*\]/);
         if (match) {
           const items = JSON.parse(match[0]);

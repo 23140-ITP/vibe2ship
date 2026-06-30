@@ -59,18 +59,20 @@ export default function AutoDraftingDesk() {
         const emailPrompt = `Write a concise professional email updating a team about completing the subtask "${subtaskName}" under main task "${taskName}". Keep it under 80 words. Sign off as 'User'.`;
         const templatePrompt = `Write a brief status update note for: Main Task: "${taskName}", Subtask: "${subtaskName}". Format as a short bullet list. Keep under 60 words.`;
 
+        const model = settings.selectedModel || 'gemini-2.5-flash';
         const [emailResp, templateResp] = await Promise.all([
-          fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${settings.geminiApiKey}`, {
+          fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.geminiApiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: emailPrompt }] }] }),
           }),
-          fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${settings.geminiApiKey}`, {
+          fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${settings.geminiApiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ contents: [{ parts: [{ text: templatePrompt }] }] }),
           }),
         ]);
+
 
         if (emailResp.ok && templateResp.ok) {
           const [emailData, templateData] = await Promise.all([emailResp.json(), templateResp.json()]);

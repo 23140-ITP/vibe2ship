@@ -17,14 +17,17 @@ Designed around ElevenLabs editorial design guidelines to provide visual authori
 
 ## ⚙️ Key Features
 
-### 1. 🧠 AI Coach Chat & Task Breakdown
-- Chat with 4 adaptive coaching personas:
+### 1. 🧠 Agentic AI Coach (Powered by Gemini 3.5/2.5 Flash)
+- **Agentic Function Calling:** The AI Coach is equipped with real-time tool execution (`tools` & `function_declarations`) enabling it to inspect, create, delete, and schedule tasks, or toggle habits directly on your screen via conversation.
+- **Model Selector:** Fully configurable to use the latest **Gemini 2.5 Flash** (latest version), **Gemini 1.5 Flash**, or **Gemini 2.0 Flash**.
+- **4 Adaptive Coaching Personas:**
   - **Tough Love:** Brutally honest, direct, zero-excuses push.
   - **YC Partner:** Actionable, high-signal startup strategist advice.
   - **Zen Master:** Mindful, calm, sustainable pacing focus.
   - **Hype Coach:** High-energy motivational companion.
-- Break down complex, overwhelming tasks into structured subtask checklists instantly using Gemini.
-- Voice-enabled input/output options (using Web Speech API).
+- **Task Breakdown:** Break down complex, overwhelming tasks into structured subtask checklists instantly.
+- **Voice Control:** Voice-enabled input/output options (Web Speech API).
+
 
 ### 2. 🍅 Focused Workspace & Focus Guard
 - Accurate Pomodoro timer driven by `Date.now()` delta logic (survives tab switches/reloads).

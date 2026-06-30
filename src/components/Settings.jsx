@@ -31,8 +31,9 @@ export default function Settings({ onClose }) {
     setApiTesting(true);
     setApiStatus('Testing…');
     try {
+      const model = settings.selectedModel || 'gemini-2.5-flash';
       const resp = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${trimmed}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${trimmed}`,
         {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -143,19 +144,34 @@ export default function Settings({ onClose }) {
               AI Configuration
             </span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 500 }}>
-                <span>Gemini API Key</span>
-                <input
-                  type="password"
-                  data-testid="input-api-key"
-                  className="input-text"
-                  style={{ width: '100%' }}
-                  placeholder="AIza..."
-                  value={apiKey}
-                  onChange={e => setApiKey(e.target.value)}
-                  onBlur={e => update('settings.geminiApiKey', e.target.value.trim())}
-                />
-              </label>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 500 }}>
+                  <span>Gemini API Key</span>
+                  <input
+                    type="password"
+                    data-testid="input-api-key"
+                    className="input-text"
+                    style={{ width: '100%' }}
+                    placeholder="AIza..."
+                    value={apiKey}
+                    onChange={e => setApiKey(e.target.value)}
+                    onBlur={e => update('settings.geminiApiKey', e.target.value.trim())}
+                  />
+                </label>
+                <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 500 }}>
+                  <span>Gemini Model Version</span>
+                  <select
+                    className="input-text"
+                    value={settings.selectedModel || 'gemini-2.5-flash'}
+                    onChange={e => update('settings.selectedModel', e.target.value)}
+                    style={{ cursor: 'pointer' }}
+                  >
+                    <option value="gemini-2.5-flash">Gemini 2.5 Flash (Latest)</option>
+                    <option value="gemini-1.5-flash-latest">Gemini 1.5 Flash</option>
+                    <option value="gemini-2.0-flash-exp">Gemini 2.0 Flash</option>
+                  </select>
+                </label>
+              </div>
               <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                 <button
                   data-testid="btn-test-api"

@@ -1,0 +1,8 @@
+feat: upgrade AI Coach with Gemini Function Calling & model selection
+
+Enhances Agentic Depth and Google Technologies criteria:
+- Implements full Gemini tool schemas (get_current_tasks, create_task, delete_task, add_habit, toggle_habit, get_habits_and_streaks, breakdown_task)
+- Sets up recursive conversational tool execution loop in AICoach
+- Adds model selection dropdown to Settings (Gemini 2.5 Flash, 1.5 Flash, 2.0 Flash)
+- Updates calls to dynamically use selected model
+- Polishes README documentation

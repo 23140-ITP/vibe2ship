@@ -29,6 +29,7 @@ const defaultState = {
     notificationPermission: 'default',
     reduceMotion: false,
     coachPersona: 'tough-love',
+    selectedModel: 'gemini-2.5-flash',
   },
   tasks: [],
   events: [],
