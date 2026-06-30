@@ -1,6 +1,0 @@
-feat: prioritize backend API calls and enable local mock fallbacks
-
-Improves E2E usability and developer test loop:
-- Modifies AICoach, FocusedWorkspace, AutoDraftingDesk, and EisenhowerMatrix to always attempt server-side api requests first
-- Integrates graceful catch fallbacks to mock data if API requests fail
-- Ensures passwordless Vertex AI backend authentication runs seamlessly when local API keys are omitted
